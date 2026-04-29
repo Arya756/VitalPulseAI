@@ -117,13 +117,20 @@ import traceback
 @app.route('/api/analyze/<record_id>')
 def analyze(record_id):
     try:
-        print(f"Starting analysis for record: {record_id}")
-        record_path = download_mitdb_record(record_id)
-        print(f"Record path: {record_path}")
+        print(f"Starting cloud-optimized analysis for record: {record_id}")
         
-        record = wfdb.rdrecord(record_path, sampto=5000)
+        # Try to read locally first, otherwise stream directly from PhysioNet
+        # This prevents OOM errors on memory-constrained servers like Render
+        record_path = os.path.join(MITDB_DIR, record_id)
+        
+        if os.path.exists(record_path + '.dat'):
+            print("Loading from local cache...")
+            record = wfdb.rdrecord(record_path, sampto=5000)
+        else:
+            print("Streaming directly from PhysioNet...")
+            record = wfdb.rdrecord(record_id, pn_dir='mitdb', sampto=5000)
+        
         signal = record.p_signal[:, 0]
-        
         print("Running signal analysis...")
         analysis = advanced_ecg_analysis(signal, record.fs)
         if not analysis:
