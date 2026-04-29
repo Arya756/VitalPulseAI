@@ -1,0 +1,9 @@
+flask
+wfdb
+numpy
+pandas
+scipy
+matplotlib
+neurokit2
+antropy
+python-dotenv

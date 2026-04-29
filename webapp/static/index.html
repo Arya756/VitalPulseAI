@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalPulse AI | Calm Cardiac Monitoring</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon"></div>
+                <h2>VitalPulse</h2>
+            </div>
+            <div class="nav-section">
+                <label>MIT-BIH DATABASE</label>
+                <select id="recordSelect">
+                    <option value="100">Record 100 (Normal)</option>
+                    <option value="105">Record 105 (Noise)</option>
+                    <option value="200">Record 200 (Arrhythmia)</option>
+                    <option value="203">Record 203 (AFib)</option>
+                </select>
+                <button id="analyzeBtn" class="nav-btn primary">Analyze Now</button>
+            </div>
+            <div class="nav-section">
+                <label>CUSTOM UPLOAD</label>
+                <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+                    <span class="upload-icon">↑</span>
+                    <p>Drop CSV Data File</p>
+                    <input type="file" id="fileInput" hidden accept=".csv,.txt">
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                <p>Status: <span id="status">Ready</span></p>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="title-group">
+                    <h1>Clinical Dashboard</h1>
+                    <p>Live Analysis & Narrative Report — Record <span id="currentRecord">100</span></p>
+                </div>
+                <div class="user-profile">
+                    <span id="timestamp"></span>
+                </div>
+            </header>
+
+            <!-- Phase 1: Heart Rate Detection -->
+            <section class="analysis-phase">
+                <div class="phase-header">
+                    <span class="phase-number">01</span>
+                    <div>
+                        <h2>Heart Rate Detection</h2>
+                        <p>Problem Statement 1: R-Peak detection from single-lead ECG</p>
+                    </div>
+                </div>
+                <div class="phase-grid">
+                    <div class="grid-item span-2 chart-card">
+                        <div class="card-header"><h3>ECG Waveform — 8s Window</h3></div>
+                        <div class="canvas-wrapper"><canvas id="ecgChart"></canvas></div>
+                    </div>
+                    <div class="grid-item metrics-card">
+                        <div class="card-header"><h3>Phase 1 Results</h3></div>
+                        <div class="metrics-list">
+                            <div class="metric-row">
+                                <span class="m-icon">❤️</span>
+                                <span class="m-label">Avg HR:</span>
+                                <span class="m-value color-green" id="avgHr">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Phase 2: Rhythm & AFib -->
+            <section class="analysis-phase">
+                <div class="phase-header">
+                    <span class="phase-number">02</span>
+                    <div>
+                        <h2>Rhythm & AFib Analysis</h2>
+                        <p>Problem Statement 2: Identifying irregular rhythms and Atrial Fibrillation</p>
+                    </div>
+                </div>
+                <div class="phase-grid">
+                    <div class="grid-item span-2 chart-card">
+                        <div class="card-header"><h3>Heart Rate Variability Trend</h3></div>
+                        <div class="canvas-wrapper"><canvas id="hrChart"></canvas></div>
+                    </div>
+                    <div class="grid-item plot-card">
+                        <div class="card-header"><h3>Rhythm Classification</h3></div>
+                        <div class="canvas-wrapper small"><canvas id="rhythmPie"></canvas></div>
+                        <div class="metric-row mt-2">
+                            <span class="m-label">AFib Probability:</span>
+                            <span class="m-value color-orange" id="afib">--</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Phase 3: Stress & HRV -->
+            <section class="analysis-phase">
+                <div class="phase-header">
+                    <span class="phase-number">03</span>
+                    <div>
+                        <h2>Holistic Stress Assessment</h2>
+                        <p>Problem Statement 4: Deep HRV feature extraction and stress scoring</p>
+                    </div>
+                </div>
+                <div class="phase-grid three-cols">
+                    <div class="grid-item metrics-card">
+                        <div class="card-header"><h3>HRV Features</h3></div>
+                        <div class="metrics-list">
+                            <div class="metric-row"><span class="m-icon">📊</span><span class="m-label">SDNN:</span><span class="m-value color-green" id="sdnn">--</span></div>
+                            <div class="metric-row"><span class="m-icon">📈</span><span class="m-label">RMSSD:</span><span class="m-value color-green" id="rmssd">--</span></div>
+                            <div class="metric-row"><span class="m-icon">📉</span><span class="m-label">pNN50:</span><span class="m-value color-orange" id="pnn50">--</span></div>
+                            <div class="metric-row"><span class="m-icon">⚖️</span><span class="m-label">LF/HF:</span><span class="m-value color-orange" id="lfHf">--</span></div>
+                        </div>
+                    </div>
+                    <div class="grid-item plot-card">
+                        <div class="card-header"><h3>Poincaré Plot</h3></div>
+                        <div class="canvas-wrapper small"><canvas id="poincareChart"></canvas></div>
+                    </div>
+                    <div class="grid-item plot-card">
+                        <div class="card-header"><h3>Stress Level</h3></div>
+                        <div class="canvas-wrapper small"><canvas id="stressPie"></canvas></div>
+                        <div class="metric-row mt-2">
+                            <span class="m-label">Current Stress:</span>
+                            <span class="m-value color-orange" id="stressVal">--</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Final Insights -->
+            <section class="analysis-phase">
+                <div class="phase-header">
+                    <span class="phase-number">✨</span>
+                    <div>
+                        <h2>AI Insights & Final Report</h2>
+                        <p>Comprehensive health interpretation by VitalPulse AI</p>
+                    </div>
+                </div>
+                <div class="phase-grid">
+                    <div class="grid-item full-width ai-report-card">
+                        <div class="report-container" id="aiReport">
+                            <p class="placeholder">Awaiting analysis results...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

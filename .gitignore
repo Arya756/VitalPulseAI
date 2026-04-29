@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv
+venv/
+ENV/
+
+# Data & Database (Large files)
+webapp/mitdb/
+mit-bih-arrhythmia-database-1.0.0/
+*.dat
+*.hea
+*.atr
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environments
+.env
+.flaskenv
