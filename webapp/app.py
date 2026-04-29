@@ -112,13 +112,19 @@ def index():
     except Exception as e:
         return f"Static folder error: {e}", 500
 
+import traceback
+
 @app.route('/api/analyze/<record_id>')
 def analyze(record_id):
     try:
-        download_mitdb_record(record_id)
-        record = wfdb.rdrecord(os.path.join(MITDB_DIR, record_id), sampto=5000)
+        print(f"Starting analysis for record: {record_id}")
+        record_path = download_mitdb_record(record_id)
+        print(f"Record path: {record_path}")
+        
+        record = wfdb.rdrecord(record_path, sampto=5000)
         signal = record.p_signal[:, 0]
         
+        print("Running signal analysis...")
         analysis = advanced_ecg_analysis(signal, record.fs)
         if not analysis:
             return jsonify({"error": "Insufficient peaks for analysis"}), 400
@@ -126,7 +132,9 @@ def analyze(record_id):
         report = generate_ai_report(analysis)
         return jsonify({**analysis, "report": report})
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        error_msg = traceback.format_exc()
+        print(f"ERROR in /analyze: {error_msg}")
+        return jsonify({"error": str(e), "details": error_msg}), 500
 
 @app.route('/api/analyze_file', methods=['POST'])
 def analyze_file():
@@ -145,7 +153,9 @@ def analyze_file():
             return jsonify({"error": "Analysis failed"}), 400
         return jsonify({**analysis, "report": generate_ai_report(analysis)})
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        error_msg = traceback.format_exc()
+        print(f"ERROR in /analyze_file: {error_msg}")
+        return jsonify({"error": str(e), "details": error_msg}), 500
 
 if __name__ == '__main__':
     import os
