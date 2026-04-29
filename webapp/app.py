@@ -8,26 +8,23 @@ from flask import Flask, request, jsonify, send_from_directory
 from scipy.signal import find_peaks, butter, filtfilt, welch
 import wfdb
 
-# Use absolute paths for the static folder to prevent 403/404 errors
-base_dir = os.path.abspath(os.path.dirname(__file__))
-static_dir = os.path.join(base_dir, 'static')
+# Configure absolute paths for reliable hosting
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, 
+            static_folder=os.path.join(BASE_DIR, 'static'), 
+            static_url_path='')
 
-# Map the static folder to the root URL so style.css and script.js are found
-app = Flask(__name__, static_url_path='', static_folder=static_dir)
-
-# Ensure database directory exists
-DB_PATH = os.path.join(base_dir, 'mitdb')
-if not os.path.exists(DB_PATH):
-    os.makedirs(DB_PATH)
+MITDB_DIR = os.path.join(BASE_DIR, 'mitdb')
+if not os.path.exists(MITDB_DIR):
+    os.makedirs(MITDB_DIR)
 
 def download_mitdb_record(record_id):
-    """Downloads MIT-BIH record if it doesn't exist locally."""
-    files = [f'{record_id}.hea', f'{record_id}.dat', f'{record_id}.atr']
-    for f in files:
-        if not os.path.exists(os.path.join(DB_PATH, f)):
-            print(f"Downloading {f}...")
-            wfdb.dl_database('mitdb', dl_dir=DB_PATH, records=[record_id])
-            break
+    """Download MIT-BIH record if not locally available."""
+    record_path = os.path.join(MITDB_DIR, record_id)
+    if not os.path.exists(record_path + '.dat'):
+        print(f"Downloading record {record_id}...")
+        wfdb.dl_database('mitdb', dl_dir=MITDB_DIR, records=[record_id])
+    return record_path
 
 # --- ADVANCED SIGNAL PROCESSING ---
 
@@ -119,7 +116,7 @@ def index():
 def analyze(record_id):
     try:
         download_mitdb_record(record_id)
-        record = wfdb.rdrecord(os.path.join(DB_PATH, record_id), sampto=5000)
+        record = wfdb.rdrecord(os.path.join(MITDB_DIR, record_id), sampto=5000)
         signal = record.p_signal[:, 0]
         
         analysis = advanced_ecg_analysis(signal, record.fs)
